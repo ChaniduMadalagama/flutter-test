@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
+
 import '../services/search_service.dart';
 
 // Search states

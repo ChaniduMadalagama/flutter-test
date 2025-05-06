@@ -34,21 +34,27 @@ class SearchService {
   final Random _random = Random();
 
   Future<List<String>> searchItems(String query) async {
-    // Simulate network delay between 200ms and 1000ms
-    await Future.delayed(Duration(milliseconds: 200 + _random.nextInt(800)));
+    try {
+      // Simulate network delay between 200ms and 1000ms
+      await Future.delayed(Duration(milliseconds: 200 + _random.nextInt(800)));
 
-    // Simulate random errors (10% chance)
-    if (_random.nextDouble() < 0.1) {
-      throw Exception('Failed to fetch search results');
-    }
+      // Simulate random errors (10% chance)
+      if (_random.nextDouble() < 0.1) {
+        throw Exception('Failed to fetch search results');
+      }
 
-    if (query.isEmpty) {
+      if (query.isEmpty) {
+        return [];
+      }
+
+      // Filter mock data based on query
+      return _mockData
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    } catch (e) {
+      // Handle the error here (e.g., logging or returning an empty list)
+      print('Error: $e');
       return [];
     }
-
-    // Filter mock data based on query
-    return _mockData
-        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
-        .toList();
   }
 }

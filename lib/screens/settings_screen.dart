@@ -19,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
-  //Custem CupertinoActionSheet
+  //custem wiget for howTermsAndConditions
   void _showTermsAndConditions() {
     showCupertinoModalPopup(
       context: context,
@@ -66,7 +66,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             return true;
           },
           child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
             slivers: [
               CupertinoSliverNavigationBar(
                 largeTitle: const Text('Settings'),
@@ -75,6 +74,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: EdgeInsetsDirectional.zero,
                 backgroundColor: CupertinoColors.systemBackground.withOpacity(
                   0.9,
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(56.0),
+                  child: AnimatedOpacity(
+                    opacity: _isSearchVisible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: CupertinoSearchTextField(
+                        controller: _searchController,
+                        placeholder: 'Search settings...',
+                        onChanged: (value) {
+                          // Handle search
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -118,9 +134,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Colors.blue.shade300,
-                              Colors.blue.shade100,
-                              Colors.blue.shade200,
+                              Colors.red.shade300,
+                              Colors.red.shade100,
+                              Colors.red.shade200,
                             ],
                           ).createShader(bounds);
                         },
@@ -131,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -148,19 +164,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 16),
-                      AnimatedOpacity(
-                        opacity: _isSearchVisible ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: CupertinoSearchTextField(
-                          controller: _searchController,
-                          placeholder: 'Search settings...',
-                          onChanged: (value) {
-                            // Handle search
-                          },
-                        ),
-                      ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -173,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  //build setings item custem wiget
+  //custem wiget for the steings items
   Widget _buildSettingsItem(
     String title,
     IconData icon, {

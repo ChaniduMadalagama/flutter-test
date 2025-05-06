@@ -1,6 +1,6 @@
 // user_provider.dart
 import 'package:flutter/foundation.dart';
-import '../models/user.dart';
+import '../models/models.dart';
 import '../repositories/user_repository.dart';
 
 // Enum for tracking the state of the user data
