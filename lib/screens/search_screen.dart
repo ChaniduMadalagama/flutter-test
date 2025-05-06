@@ -1,99 +1,116 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import '../providers/search_provider.dart';
-
-// class SearchScreen extends StatelessWidget {
-//   const SearchScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // TODO: Implement the search screen UI
-//     // Requirements:
-//     // - Create a TextField for user input
-//     // - Display search results in a ListView
-//     // - Show loading indicator while waiting for results
-//     // - Display a message if no results or errors
-//     // - Connect to the SearchProvider for state
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Product Search'),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: [
-//             // TODO: Implement the search TextField
-
-//             // TODO: Implement the results ListView with appropriate states
-//             // - Loading state
-//             // - Error state
-//             // - Empty state
-//             // - Success state with results
-
-//             Expanded(
-//               child: Center(
-//                 child: Text(
-//                   'Implement search functionality using RxDart and Provider',
-//                   textAlign: TextAlign.center,
-//                   style: Theme.of(context).textTheme.bodyLarge,
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// search_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/search_provider.dart';
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Trigger an initial empty query search when the screen loads
-    Future.delayed(Duration.zero, () {
-      context.read<SearchProvider>().updateQuery('');
-    });
+  State<SearchScreen> createState() => _SearchScreenState();
+}
 
+class _SearchScreenState extends State<SearchScreen> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('User Search')),
+      appBar: AppBar(title: const Text('Search')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              onChanged:
-                  (query) => context.read<SearchProvider>().updateQuery(query),
-              decoration: const InputDecoration(labelText: 'Search for users'),
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                context.read<SearchProvider>().updateSearch(value);
+              },
             ),
+            const SizedBox(height: 16),
             Expanded(
-              child: Consumer<SearchProvider>(
-                builder: (context, searchProvider, _) {
-                  if (searchProvider.state == SearchState.loading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (searchProvider.state == SearchState.error) {
-                    return const Center(child: Text('An error occurred.'));
-                  } else if (searchProvider.state == SearchState.empty) {
-                    return const Center(child: Text('No results found.'));
-                  } else {
-                    return ListView.builder(
-                      itemCount: searchProvider.results.length,
+              child: StreamBuilder<SearchState>(
+                stream: context.read<SearchProvider>().searchResults,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: Text('Start typing to search'));
+                  }
+
+                  final state = snapshot.data!;
+                  return switch (state) {
+                    SearchInitial() => const Center(
+                      child: Text('Start typing to search'),
+                    ),
+                    SearchLoading() => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    SearchSuccess(results: final results) => ListView.builder(
+                      itemCount: results.length,
                       itemBuilder: (context, index) {
-                        final userName = searchProvider.results[index];
                         return ListTile(
-                          title: Text(userName),
-                          subtitle: Text('Email: $userName'),
+                          title: Text(results[index]),
+                          leading: const Icon(Icons.article),
+                          onTap: () {
+                            // Handle item tap
+                          },
                         );
                       },
-                    );
-                  }
+                    ),
+                    SearchError(message: final message) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error: $message',
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Retry search
+                              if (_controller.text.isNotEmpty) {
+                                context.read<SearchProvider>().updateSearch(
+                                  _controller.text,
+                                );
+                              }
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SearchEmpty() => const Center(
+                      child: Text('No results found'),
+                    ),
+                  };
                 },
               ),
             ),

@@ -1,96 +1,76 @@
-// import 'package:flutter/foundation.dart';
-// import 'package:rxdart/rxdart.dart';
-// import '../services/search_service.dart';
-
-// // TODO: Implement SearchProvider using ChangeNotifier
-// // Requirements:
-// // - Create a class that extends ChangeNotifier
-// // - Use BehaviorSubject for search query stream
-// // - Apply rxdart operators (debounceTime, distinct, switchMap)
-// // - Handle potential errors gracefully
-// // - Emit states for Loading, Success, Error, and Empty
-
-// enum SearchState {
-//   initial,
-//   loading,
-//   success,
-//   error,
-//   empty,
-// }
-
-// class SearchProvider extends ChangeNotifier {
-//   final SearchService _searchService;
-
-//   // TODO: Add state variables
-
-//   // TODO: Add BehaviorSubject for search queries
-
-//   SearchProvider({SearchService? searchService})
-//       : _searchService = searchService ?? SearchService() {
-//     // TODO: Initialize search stream with operators
-//     // - Use debounceTime (300ms)
-//     // - Use distinct operator
-//     // - Use switchMap for API calls
-//     // - Handle errors within stream
-//   }
-
-//   // TODO: Implement methods to update search query
-
-//   // TODO: Implement clean up for streams
-//   @override
-//   void dispose() {
-//     // TODO: Clean up any streams
-//     super.dispose();
-//   }
-// }
-
-// search_provider.dart
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import '../services/search_service.dart';
 
-enum SearchState { initial, loading, success, error, empty }
+// Search states
+sealed class SearchState {}
+
+class SearchInitial extends SearchState {}
+
+class SearchLoading extends SearchState {}
+
+class SearchSuccess extends SearchState {
+  final List<String> results;
+  SearchSuccess(this.results);
+}
+
+class SearchError extends SearchState {
+  final String message;
+  SearchError(this.message);
+}
+
+class SearchEmpty extends SearchState {}
 
 class SearchProvider extends ChangeNotifier {
   final SearchService _searchService;
-  final BehaviorSubject<String> _queryController = BehaviorSubject<String>();
 
-  SearchState _state = SearchState.initial;
-  List<String> _results = [];
+  // Stream controllers
+  final _searchController = BehaviorSubject<String>();
+  final _resultsController = BehaviorSubject<SearchState>.seeded(
+    SearchInitial(),
+  );
 
-  SearchState get state => _state;
-  List<String> get results => _results;
+  // Stream getters
+  Stream<SearchState> get searchResults => _resultsController.stream;
+  Function(String) get updateSearch => _searchController.sink.add;
 
-  SearchProvider({SearchService? searchService})
-    : _searchService = searchService ?? SearchService() {
-    _queryController.stream
+  SearchProvider(this._searchService) {
+    // Set up search pipeline
+    _searchController.stream
         .debounceTime(const Duration(milliseconds: 300))
         .distinct()
-        .switchMap((query) {
-          _state = SearchState.loading;
-          notifyListeners();
-          return Stream.fromFuture(
-            _searchService.searchUsers(query),
-          ); // Changed to searchUsers
-        })
-        .listen((results) {
-          if (results.isEmpty) {
-            _state = SearchState.empty;
-          } else {
-            _state = SearchState.success;
-            _results = results;
-          }
-          notifyListeners();
-        });
+        .switchMap((query) => _performSearch(query))
+        .listen(
+          (state) => _resultsController.add(state),
+          onError:
+              (error) => _resultsController.add(SearchError(error.toString())),
+        );
   }
 
-  void updateQuery(String query) {
-    _queryController.add(query);
+  Stream<SearchState> _performSearch(String query) async* {
+    if (query.isEmpty) {
+      yield SearchEmpty();
+      return;
+    }
+
+    yield SearchLoading();
+
+    try {
+      final results = await _searchService.searchItems(query);
+      if (results.isEmpty) {
+        yield SearchEmpty();
+      } else {
+        yield SearchSuccess(results);
+      }
+    } catch (e) {
+      yield SearchError(e.toString());
+    }
   }
 
   @override
   void dispose() {
-    _queryController.close();
+    _searchController.close();
+    _resultsController.close();
     super.dispose();
   }
 }

@@ -1,92 +1,40 @@
-// // TODO: Implement a mock search service
-// // Requirements:
-// // - Create a class that simulates fetching data with a delay
-// // - Implement a searchProducts method that returns a Future<List<String>>
-// // - Return an empty list for empty queries
-// // - Simulate a short delay (500ms)
+import 'dart:async';
+import 'dart:math';
 
-// class SearchService {
-//   // TODO: Implement searchProducts method
-//   Future<List<String>> searchProducts(String query) async {
-//     // TODO: Add mock product search logic with delay
-//     throw UnimplementedError('searchProducts has not been implemented');
-//   }
-// }
-
-// search_service.dart
 class SearchService {
-  final List<Map<String, String>> _dummyUsers = [
-    {
-      'name': 'John Doe',
-      'email': 'john.doe@example.com',
-      'phone': '123-456-7890',
-    },
-    {
-      'name': 'Jane Smith',
-      'email': 'jane.smith@example.com',
-      'phone': '987-654-3210',
-    },
-    {
-      'name': 'Alice Johnson',
-      'email': 'alice.johnson@example.com',
-      'phone': '555-555-5555',
-    },
-    {
-      'name': 'Bob Brown',
-      'email': 'bob.brown@example.com',
-      'phone': '444-444-4444',
-    },
-    {
-      'name': 'Charlie White',
-      'email': 'charlie.white@example.com',
-      'phone': '333-333-3333',
-    },
-    {
-      'name': 'David Green',
-      'email': 'david.green@example.com',
-      'phone': '222-222-2222',
-    },
-    {
-      'name': 'Eva Black',
-      'email': 'eva.black@example.com',
-      'phone': '111-111-1111',
-    },
-    {
-      'name': 'Frank Blue',
-      'email': 'frank.blue@example.com',
-      'phone': '666-666-6666',
-    },
-    {
-      'name': 'Grace Red',
-      'email': 'grace.red@example.com',
-      'phone': '777-777-7777',
-    },
-    {
-      'name': 'Helen Yellow',
-      'email': 'helen.yellow@example.com',
-      'phone': '888-888-8888',
-    },
+  final List<String> _mockData = [
+    'Flutter Development',
+    'Dart Programming',
+    'Mobile App Development',
+    'iOS Development',
+    'Android Development',
+    'Cross-platform Development',
+    'UI/UX Design',
+    'State Management',
+    'Backend Integration',
+    'API Development',
+    'Testing Strategies',
+    'Performance Optimization',
   ];
 
-  Future<List<String>> searchUsers(String query) async {
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
+  final Random _random = Random();
 
-    if (query.isEmpty) {
-      // Return all users if the query is empty
-      return _dummyUsers.map((user) => user['name'] ?? 'N/A').toList();
+  Future<List<String>> searchItems(String query) async {
+    // Simulate network delay between 200ms and 1000ms
+    await Future.delayed(Duration(milliseconds: 200 + _random.nextInt(800)));
+
+    // Simulate random errors (10% chance)
+    if (_random.nextDouble() < 0.1) {
+      throw Exception('Failed to fetch search results');
     }
 
-    List<Map<String, String>> filteredUsers =
-        _dummyUsers.where((user) {
-          return user['name']!.toLowerCase().contains(query.toLowerCase());
-        }).toList();
-
-    if (filteredUsers.isEmpty) {
+    if (query.isEmpty) {
       return [];
     }
 
-    return filteredUsers.map((user) => user['name'] ?? 'N/A').toList();
+    // Filter mock data based on query
+    return _mockData
+        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 }
