@@ -22,10 +22,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Coding Test',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
+        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
         initialRoute: '/',
         routes: {
           '/': (context) => const HomePage(),
@@ -44,9 +41,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Coding Test'),
-      ),
+      appBar: AppBar(title: const Text('Flutter Coding Test')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
